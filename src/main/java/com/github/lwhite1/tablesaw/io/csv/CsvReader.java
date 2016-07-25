@@ -1,11 +1,13 @@
 package com.github.lwhite1.tablesaw.io.csv;
 
 import com.github.lwhite1.tablesaw.api.ColumnType;
+import com.github.lwhite1.tablesaw.api.ParsingConfiguration;
 import com.github.lwhite1.tablesaw.api.Table;
 import com.github.lwhite1.tablesaw.columns.Column;
 import com.github.lwhite1.tablesaw.io.TypeUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.opencsv.CSVReader;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +28,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
 
@@ -73,7 +76,7 @@ public class CsvReader {
    */
   public static Table read(ColumnType types[], boolean header, char columnSeparator, String fileName) throws IOException {
     InputStream stream = new FileInputStream(fileName);
-    return read(fileName, types, header, columnSeparator, stream);
+    return read(fileName, types, header, columnSeparator, stream, null);
   }
 
   /**
@@ -91,8 +94,24 @@ public class CsvReader {
     return read(columnTypes, true, delimiter, fileName);
   }
 
+  /**
+   * Returns a Table constructed from a CSV File with the given file name
+   * <p>
+   * The @code{fileName} is used as the initial table name for the new table if no name
+   * is specified in the parsing configuration.
+   *
+   * @param parsingConfiguration The configuration to use for parsing
+   * @return A table containing the data from the file
+   * @throws IOException
+   *
+   */
+  public static Table read(ParsingConfiguration parsingConfiguration) throws IOException {
+    InputStream stream = new FileInputStream(parsingConfiguration.getFileName());
+    ColumnType[] columnTypes = detectColumnTypes(parsingConfiguration.getFileName(), parsingConfiguration.isHeader(), parsingConfiguration.getDelimiter());
+    return read(parsingConfiguration.getTableName(), columnTypes, parsingConfiguration.isHeader(), parsingConfiguration.getDelimiter(), stream, parsingConfiguration.getOverriddenColumnTypes());
+  }
 
-  public static Table read(String tableName, ColumnType types[], boolean header, char columnSeparator, InputStream stream)
+  public static Table read(String tableName, ColumnType types[], boolean header, char columnSeparator, InputStream stream, ImmutableMap<String, ColumnType> overriddenColumnTypes)
       throws IOException {
 
     BufferedReader streamReader = new BufferedReader(new InputStreamReader(stream));
@@ -110,6 +129,19 @@ public class CsvReader {
       } else {
         columnNames = makeColumnNames(types);
         headerRow = Lists.newArrayList(columnNames);
+      }
+
+      if (overriddenColumnTypes != null) {
+        for (Map.Entry<String, ColumnType> stringColumnTypeEntry : overriddenColumnTypes.entrySet()) {
+          int position = 0;
+          for (String columnName : columnNames) {
+            if (columnName.equals(stringColumnTypeEntry.getKey())) {
+              types[position] = stringColumnTypeEntry.getValue();
+            }
+            position++;
+          }
+        }
+
       }
 
       table = Table.create(nameMaker(tableName));

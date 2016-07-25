@@ -819,6 +819,16 @@ public class Table implements Relation, IntIterable {
   }
 
   /**
+   * Returns a new table constructed from a character delimited (aka CSV) text file, using the
+   * configuration passed as a parameter.
+   * @param parsingConfiguration The parsing configuration
+   * @throws IOException
+   */
+  public static Table createFromCsv(ParsingConfiguration parsingConfiguration) throws IOException {
+    return CsvReader.read(parsingConfiguration);
+  }
+
+  /**
    * Returns a new table constructed from a character delimited (aka CSV) text file
    *
    * @param types     The column types
@@ -831,7 +841,7 @@ public class Table implements Relation, IntIterable {
    */
   public static Table createFromStream(ColumnType[] types, boolean header, char delimiter, InputStream stream,
                                        String tableName) throws IOException {
-    return CsvReader.read(tableName, types, header, delimiter, stream);
+    return CsvReader.read(tableName, types, header, delimiter, stream, null);
   }
 
   /**
