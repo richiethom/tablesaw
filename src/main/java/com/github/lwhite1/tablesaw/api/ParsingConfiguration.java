@@ -108,4 +108,8 @@ public final class ParsingConfiguration {
     public ImmutableMap<String, ColumnType> getOverriddenColumnTypes() {
         return overriddenColumnTypes;
     }
+
+    public ParsingConfiguration cloneWithNameFile(String name) {
+        return new ParsingConfiguration(overriddenColumnTypes, name, name, header, delimiter);
+    }
 }
