@@ -53,49 +53,51 @@ public final class TypeUtils {
 
   // Formats that we accept in parsing dates from strings
   // TODO: Add more types, especially dates with month names spelled-out fully.
-  private static final DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyyMMdd");
-  private static final DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-  private static final DateTimeFormatter dtf3 = DateTimeFormatter.ofPattern("MM-dd-yyyy");
-  private static final DateTimeFormatter dtf4 = DateTimeFormatter.ofPattern("MM.dd.yyyy");
-  private static final DateTimeFormatter dtf5 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-  private static final DateTimeFormatter dtf6 = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-  private static final DateTimeFormatter dtf7 = DateTimeFormatter.ofPattern("dd/MMM/yyyy");
-  private static final DateTimeFormatter dtf8 = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
-  private static final DateTimeFormatter dtf9 = DateTimeFormatter.ofPattern("M/d/yyyy");
-  private static final DateTimeFormatter dtf10 = DateTimeFormatter.ofPattern("M/d/yy");
-  private static final DateTimeFormatter dtf11 = DateTimeFormatter.ofPattern("MMM/dd/yyyy");
-  private static final DateTimeFormatter dtf12 = DateTimeFormatter.ofPattern("MMM-dd-yyyy");
-  private static final DateTimeFormatter dtf13 = DateTimeFormatter.ofPattern("MMM/dd/yy");
-  private static final DateTimeFormatter dtf14 = DateTimeFormatter.ofPattern("MMM-dd-yy");
-  private static final DateTimeFormatter dtf15 = DateTimeFormatter.ofPattern("MMM/dd/yyyy");
-  private static final DateTimeFormatter dtf16 = DateTimeFormatter.ofPattern("MMM/d/yyyy");
-  private static final DateTimeFormatter dtf17 = DateTimeFormatter.ofPattern("MMM-dd-yy");
-  private static final DateTimeFormatter dtf18 = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-  private static final DateTimeFormatter dtf19 = DateTimeFormatter.ofPattern("MMM d, yyyy");
+  public static final DateTimeFormatter YYYYMMMDD = DateTimeFormatter.ofPattern("yyyyMMdd");
+  public static final DateTimeFormatter MM_SLASH_DD_SLASH_YYYY = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+  public static final DateTimeFormatter MM_HYPHEN_DD_HYPHEN_YYYY = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+  public static final DateTimeFormatter MM_DOT_DD_DOT_YYYY = DateTimeFormatter.ofPattern("MM.dd.yyyy");
+  public static final DateTimeFormatter YYYY_HYPHEN_MM_HYPHEN_DD = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+  public static final DateTimeFormatter YYYY_SLASH_MM_SLASH_DD = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+  public static final DateTimeFormatter DD_SLASH_MMM_SLASH_YYYY = DateTimeFormatter.ofPattern("dd/MMM/yyyy");
+  public static final DateTimeFormatter DD_HYPHEN_MMM_HYPHEN_YYYY = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
+  public static final DateTimeFormatter M_SLASH_D_SLASH_YYYY = DateTimeFormatter.ofPattern("M/d/yyyy");
+  public static final DateTimeFormatter M_SLASH_D_SLASH_YY = DateTimeFormatter.ofPattern("M/d/yy");
+  public static final DateTimeFormatter MMM_SLASH_DD_SLASH_YYYY = DateTimeFormatter.ofPattern("MMM/dd/yyyy");
+  public static final DateTimeFormatter MMM_HYPHEN_DD_HYPHEN_YYYY = DateTimeFormatter.ofPattern("MMM-dd-yyyy");
+  public static final DateTimeFormatter MMM_SLASH_DD_SLASH_YY = DateTimeFormatter.ofPattern("MMM/dd/yy");
+  public static final DateTimeFormatter MMM_HYPHEN_DD_HYPHEN_YY = DateTimeFormatter.ofPattern("MMM-dd-yy");
+  //TODO DUPLICATE? private static final DateTimeFormatter dtf15 = DateTimeFormatter.ofPattern("MMM/dd/yyyy");
+  public static final DateTimeFormatter MMM_SLASH_D_SLASH_YYYY = DateTimeFormatter.ofPattern("MMM/d/yyyy");
+  //TODO DUPLICATE? private static final DateTimeFormatter dtf17 = DateTimeFormatter.ofPattern("MMM-dd-yy");
+  public static final DateTimeFormatter MMM_SPACE_DD_COMMA_SPACE_YYYY = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+  public static final DateTimeFormatter MMM_SPACE_D_COMMA_SPACE_YYYY = DateTimeFormatter.ofPattern("MMM d, yyyy");
+
 
   /**
    * List of formatters for use in code that selects the correct one for a given Date string
    */
   private static ImmutableList<DateTimeFormatter> dateFormatters = ImmutableList.of(
-      dtf1,
-      dtf2,
-      dtf3,
-      dtf4,
-      dtf5,
-      dtf6,
-      dtf7,
-      dtf8,
-      dtf9,
-      dtf10,
-      dtf11,
-      dtf12,
-      dtf13,
-      dtf14,
-      dtf15,
-      dtf16,
-      dtf17,
-      dtf18,
-      dtf19
+          YYYYMMMDD,
+          MM_SLASH_DD_SLASH_YYYY,
+          MM_HYPHEN_DD_HYPHEN_YYYY,
+          MM_DOT_DD_DOT_YYYY,
+          YYYY_HYPHEN_MM_HYPHEN_DD,
+          YYYY_SLASH_MM_SLASH_DD,
+          DD_SLASH_MMM_SLASH_YYYY,
+          DD_HYPHEN_MMM_HYPHEN_YYYY,
+          M_SLASH_D_SLASH_YYYY,
+          M_SLASH_D_SLASH_YY,
+          MMM_SLASH_DD_SLASH_YYYY,
+          MMM_HYPHEN_DD_HYPHEN_YYYY,
+          MMM_SLASH_DD_SLASH_YY,
+          MMM_HYPHEN_DD_HYPHEN_YY,
+          //TODO dtf15,
+          MMM_SLASH_D_SLASH_YYYY,
+          //TODO dtf17,
+          MMM_SPACE_DD_COMMA_SPACE_YYYY,
+          MMM_SPACE_D_COMMA_SPACE_YYYY
+
   );
 
   private static final DateTimeFormatter dtTimef0 =
@@ -159,26 +161,26 @@ public final class TypeUtils {
   // A formatter that handles all the date formats defined above
   public static final DateTimeFormatter DATE_FORMATTER =
       new DateTimeFormatterBuilder()
-          .appendOptional(dtf1)
-          .appendOptional(dtf2)
-          .appendOptional(dtf2)
-          .appendOptional(dtf3)
-          .appendOptional(dtf4)
-          .appendOptional(dtf5)
-          .appendOptional(dtf6)
-          .appendOptional(dtf7)
-          .appendOptional(dtf8)
-          .appendOptional(dtf9)
-          .appendOptional(dtf10)
-          .appendOptional(dtf11)
-          .appendOptional(dtf12)
-          .appendOptional(dtf13)
-          .appendOptional(dtf14)
-          .appendOptional(dtf15)
-          .appendOptional(dtf16)
-          .appendOptional(dtf17)
-          .appendOptional(dtf18)
-          .appendOptional(dtf19)
+              .appendOptional(YYYYMMMDD)
+              .appendOptional(MM_SLASH_DD_SLASH_YYYY)
+              .appendOptional(MM_SLASH_DD_SLASH_YYYY)
+              .appendOptional(MM_HYPHEN_DD_HYPHEN_YYYY)
+              .appendOptional(MM_DOT_DD_DOT_YYYY)
+              .appendOptional(YYYY_HYPHEN_MM_HYPHEN_DD)
+              .appendOptional(YYYY_SLASH_MM_SLASH_DD)
+              .appendOptional(DD_SLASH_MMM_SLASH_YYYY)
+              .appendOptional(DD_HYPHEN_MMM_HYPHEN_YYYY)
+              .appendOptional(M_SLASH_D_SLASH_YYYY)
+              .appendOptional(M_SLASH_D_SLASH_YY)
+              .appendOptional(MMM_SLASH_DD_SLASH_YYYY)
+              .appendOptional(MMM_HYPHEN_DD_HYPHEN_YYYY)
+              .appendOptional(MMM_SLASH_DD_SLASH_YY)
+              .appendOptional(MMM_HYPHEN_DD_HYPHEN_YY)
+              //.appendOptional(dtf15)
+              .appendOptional(MMM_SLASH_D_SLASH_YYYY)
+              //.appendOptional(dtf17)
+              .appendOptional(MMM_SPACE_DD_COMMA_SPACE_YYYY)
+              .appendOptional(MMM_SPACE_D_COMMA_SPACE_YYYY)
           .toFormatter();
 
   // A formatter that handles date time formats defined above

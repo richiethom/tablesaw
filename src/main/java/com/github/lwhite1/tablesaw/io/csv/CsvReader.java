@@ -75,8 +75,7 @@ public class CsvReader {
    * @throws IOException
    */
   public static Table read(ColumnType types[], boolean header, char columnSeparator, String fileName) throws IOException {
-    InputStream stream = new FileInputStream(fileName);
-    return read(fileName, types, header, columnSeparator, stream, null);
+    return read(fileName, types, header, columnSeparator);
   }
 
   /**
@@ -105,19 +104,35 @@ public class CsvReader {
    * @throws IOException
    *
    */
-  public static Table read(ParsingConfiguration parsingConfiguration) throws IOException {
-    InputStream stream = new FileInputStream(parsingConfiguration.getFileName());
-    ColumnType[] columnTypes = detectColumnTypes(parsingConfiguration.getFileName(), parsingConfiguration.isHeader(), parsingConfiguration.getDelimiter());
-    return read(parsingConfiguration.getTableName(), columnTypes, parsingConfiguration.isHeader(), parsingConfiguration.getDelimiter(), stream, parsingConfiguration.getOverriddenColumnTypes());
+  public static Table read(String tableName, ColumnType types[], boolean header, char columnSeparator) throws IOException {
+    ParsingConfiguration.Builder builder = ParsingConfiguration.newBuilder().named(tableName).withDelimiter(columnSeparator);
+    if (header) {
+      builder.withHeader();
+    }
+    builder.setColumnTypes(types);
+    return read(builder.build());
   }
 
-  public static Table read(String tableName, ColumnType types[], boolean header, char columnSeparator, InputStream stream, ImmutableMap<String, ColumnType> overriddenColumnTypes)
-      throws IOException {
+
+  public static Table read(ParsingConfiguration parsingConfiguration) throws IOException {
+    final InputStream stream;
+    if (parsingConfiguration.hasStream()) {
+      stream = parsingConfiguration.getStream();
+    } else {
+      stream = new FileInputStream(parsingConfiguration.getFileName());
+    }
+    final ColumnType[] types;
+    final boolean header = parsingConfiguration.isHeader();
+    if (parsingConfiguration.hasColumnTypes()) {
+      types = parsingConfiguration.getColumnTypes();
+    } else {
+      types = detectColumnTypes(parsingConfiguration.getFileName(), header, parsingConfiguration.getDelimiter());
+    }
 
     BufferedReader streamReader = new BufferedReader(new InputStreamReader(stream));
 
     Table table;
-    try (CSVReader reader = new CSVReader(streamReader, columnSeparator, '"')) {
+    try (CSVReader reader = new CSVReader(streamReader, parsingConfiguration.getDelimiter(), '"')) {
 
       String[] nextLine;
       String[] columnNames;
@@ -131,6 +146,7 @@ public class CsvReader {
         headerRow = Lists.newArrayList(columnNames);
       }
 
+      ImmutableMap<String, ColumnType> overriddenColumnTypes = parsingConfiguration.getOverriddenColumnTypes();
       if (overriddenColumnTypes != null) {
         for (Map.Entry<String, ColumnType> stringColumnTypeEntry : overriddenColumnTypes.entrySet()) {
           int position = 0;
@@ -144,7 +160,7 @@ public class CsvReader {
 
       }
 
-      table = Table.create(nameMaker(tableName));
+      table = Table.create(nameMaker(parsingConfiguration.getTableName()));
       for (int x = 0; x < types.length; x++) {
         if (types[x] != ColumnType.SKIP) {
           String columnName = headerRow.get(x);

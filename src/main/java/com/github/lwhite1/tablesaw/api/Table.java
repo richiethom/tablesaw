@@ -841,7 +841,12 @@ public class Table implements Relation, IntIterable {
    */
   public static Table createFromStream(ColumnType[] types, boolean header, char delimiter, InputStream stream,
                                        String tableName) throws IOException {
-    return CsvReader.read(tableName, types, header, delimiter, stream, null);
+    ParsingConfiguration.Builder builder = ParsingConfiguration.newBuilder().named(tableName).withDelimiter(delimiter).setColumnTypes(types);
+    if (header) {
+      builder.withHeader();
+    }
+    builder.setStream(stream);
+    return CsvReader.read(builder.build());
   }
 
   /**

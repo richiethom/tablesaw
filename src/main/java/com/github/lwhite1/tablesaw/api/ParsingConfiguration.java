@@ -3,6 +3,9 @@ package com.github.lwhite1.tablesaw.api;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
+import java.io.InputStream;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,17 +29,23 @@ import java.util.Map;
 public final class ParsingConfiguration {
 
   private final ImmutableMap<String, ColumnType> overriddenColumnTypes;
+  private final ImmutableMap<String, DateTimeFormatter> overriddenColumnTypesDateFormats;
   private final String tableName;
   private final String fileName;
   private final boolean header;
   private final char delimiter;
+  private final ColumnType[] columnTypes;
+  private final InputStream stream;
 
-  private ParsingConfiguration(ImmutableMap<String, ColumnType> overriddenColumnTypes, String tableName, String fileName, boolean header, char delimiter) {
+  private ParsingConfiguration(ImmutableMap<String, ColumnType> overriddenColumnTypes, String tableName, String fileName, boolean header, char delimiter, ImmutableMap<String, DateTimeFormatter> overriddenColumnTypesDateFormats, ColumnType[] columnTypes, InputStream stream) {
     this.overriddenColumnTypes = overriddenColumnTypes;
+    this.overriddenColumnTypesDateFormats = overriddenColumnTypesDateFormats;
     this.tableName = tableName;
     this.fileName = fileName;
     this.header = header;
     this.delimiter = delimiter;
+    this.columnTypes = columnTypes;
+    this.stream = stream;
   }
 
   /**
@@ -55,14 +64,23 @@ public final class ParsingConfiguration {
       b.setColumnType(columnName, type);
       return b;
     }
+
+    public Builder isOfDateFormat(DateTimeFormatter dateTimeFormatter) {
+      b.setColumnType(columnName, ColumnType.LOCAL_DATE);
+      b.setColumnDateType(columnName, dateTimeFormatter);
+      return b;
+    }
   }
 
   public static class Builder {
     private final Map<String, ColumnType> overriddenColumnTypes = new HashMap();
+    private final Map<String, DateTimeFormatter> overriddenColumnDateFormats = new HashMap<>();
     private String tableName;
     private String fileName;
     private boolean header = false;
     private char delimiter = ',';
+    private ColumnType[] columnTypes = null;
+    private InputStream stream;
 
     public ColumnParsingConfigurationBuilder column(String columnName) {
       return new ColumnParsingConfigurationBuilder(columnName, this);
@@ -102,12 +120,36 @@ public final class ParsingConfiguration {
     }
 
     public ParsingConfiguration build() {
-      return new ParsingConfiguration(ImmutableMap.copyOf(overriddenColumnTypes), Strings.isNullOrEmpty(tableName) ? fileName : tableName, fileName, header, delimiter);
+      final ImmutableMap<String, ColumnType> overriddenColumnTypesCopy = ImmutableMap.copyOf(this.overriddenColumnTypes);
+      final ImmutableMap<String, DateTimeFormatter> overriddenColumnDateFormatsCopy = ImmutableMap.copyOf(this.overriddenColumnDateFormats);
+      final ColumnType[] copy;
+      if (columnTypes != null) {
+        copy = Arrays.copyOf(columnTypes, columnTypes.length);
+      } else {
+        copy = new ColumnType[0];
+      }
+      return new ParsingConfiguration(overriddenColumnTypesCopy, Strings.isNullOrEmpty(tableName) ? fileName : tableName, fileName, header, delimiter, overriddenColumnDateFormatsCopy, copy, stream);
+
     }
 
     private void setColumnType(String columnName, ColumnType type) {
       this.overriddenColumnTypes.put(columnName, type);
     }
+
+    private void setColumnDateType(String columnName, DateTimeFormatter dateTimeFormatter) {
+      this.overriddenColumnDateFormats.put(columnName, dateTimeFormatter);
+    }
+
+    public Builder setColumnTypes(ColumnType[] columnTypes) {
+      this.columnTypes = columnTypes;
+      return this;
+    }
+
+    public Builder setStream(InputStream stream) {
+      this.stream = stream;
+      return this;
+    }
+
   }
 
   public static Builder newBuilder() {
@@ -134,6 +176,27 @@ public final class ParsingConfiguration {
     return overriddenColumnTypes;
   }
 
+  public boolean hasColumnTypes() {
+    return columnTypes != null && columnTypes.length > 0;
+  }
+
+  public ColumnType[] getColumnTypes() {
+    return columnTypes;
+  }
+
+  public ImmutableMap<String, DateTimeFormatter> getOverriddenColumnTypesDateFormats() {
+    return overriddenColumnTypesDateFormats;
+  }
+
+  public boolean hasStream() {
+    return stream != null;
+  }
+
+  public InputStream getStream() {
+    return stream;
+  }
+
+
   /**
    * Creates a copy of the ParsingConfiguration, but for a different file.
    *
@@ -142,6 +205,6 @@ public final class ParsingConfiguration {
    * @param name the fully-qualified path to the file to read
    */
   public ParsingConfiguration cloneWithNameFile(String name) {
-    return new ParsingConfiguration(overriddenColumnTypes, name, name, header, delimiter);
+    return new ParsingConfiguration(overriddenColumnTypes, name, name, header, delimiter, overriddenColumnTypesDateFormats, columnTypes, stream);
   }
 }
