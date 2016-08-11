@@ -94,18 +94,17 @@ public class CsvReader {
   }
 
   /**
-   * Returns a Table constructed from a CSV File with the given file name
+   * Returns a Table constructed from a CSV File with the given name
    * <p>
    * The @code{fileName} is used as the initial table name for the new table if no name
    * is specified in the parsing configuration.
    *
-   * @param parsingConfiguration The configuration to use for parsing
    * @return A table containing the data from the file
    * @throws IOException
    *
    */
-  public static Table read(String tableName, ColumnType types[], boolean header, char columnSeparator) throws IOException {
-    ParsingConfiguration.Builder builder = ParsingConfiguration.newBuilder().named(tableName).withDelimiter(columnSeparator);
+  public static Table read(String fileName, ColumnType types[], boolean header, char columnSeparator) throws IOException {
+    ParsingConfiguration.Builder builder = ParsingConfiguration.newBuilder().named(fileName).withDelimiter(columnSeparator);
     if (header) {
       builder.withHeader();
     }
@@ -113,7 +112,13 @@ public class CsvReader {
     return read(builder.build());
   }
 
-
+  /**
+   * Returns a Table constructed from a CSV File with the configuration for parsing
+   * specified in the @code{ParsingConfiguration} parameter.
+   * @param parsingConfiguration An object containing the configuration to use for parsing the file
+   * @return A table containing the data from the file
+   * @throws IOException
+   */
   public static Table read(ParsingConfiguration parsingConfiguration) throws IOException {
     final InputStream stream;
     if (parsingConfiguration.hasStream()) {
