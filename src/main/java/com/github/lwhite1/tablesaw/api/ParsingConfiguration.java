@@ -24,11 +24,20 @@ import java.util.Map;
  * and then invoking the isOfType() method.
  *
  * If no name has been specified, then the file name is used to
- * name the column.
+ * name the table.
  */
 public final class ParsingConfiguration {
-
+  /**
+   * Columns whose types have been explicitly declared. The types
+   * listed here override any type deduced during parsing.
+   */
   private final ImmutableMap<String, ColumnType> overriddenColumnTypes;
+
+  /**
+   * Columns whose types are one of the Date/DateTime types and whose
+   * format has been forced. The formats listed here override any format
+   * deduced during parsing.
+   */
   private final ImmutableMap<String, DateTimeFormatter> overriddenColumnTypesDateFormats;
   private final String tableName;
   private final String fileName;
@@ -60,14 +69,29 @@ public final class ParsingConfiguration {
       this.b = b;
     }
 
+    /**
+     * Sets this column's type
+     */
     public Builder isOfType(ColumnType type) {
       b.setColumnType(columnName, type);
       return b;
     }
 
-    public Builder isOfDateFormat(DateTimeFormatter dateTimeFormatter) {
-      b.setColumnType(columnName, ColumnType.LOCAL_DATE);
-      b.setColumnDateType(columnName, dateTimeFormatter);
+    /**
+     * Sets this column's type and the formatter to use
+     */
+    public Builder isOfDateFormat(ColumnType columnType, DateTimeFormatter dateTimeFormatter) {
+      switch (columnType) {
+        case LOCAL_DATE:
+        case LOCAL_DATE_TIME:
+        case LOCAL_TIME:
+          b.setColumnType(columnName, columnType);
+          b.setColumnDateType(columnName, dateTimeFormatter);
+          break;
+        default:
+          throw new IllegalArgumentException("isOfDateFormat can only be used with " +
+                  "the column types LOCAL_DATE, LOCAL_DATE_TIME, LOCAL_TIME");
+      }
       return b;
     }
   }
@@ -119,25 +143,29 @@ public final class ParsingConfiguration {
       return this;
     }
 
+    /**
+     * Creates an instance of the ParsingConfiguration
+     * @return
+     */
     public ParsingConfiguration build() {
       final ImmutableMap<String, ColumnType> overriddenColumnTypesCopy = ImmutableMap.copyOf(this.overriddenColumnTypes);
       final ImmutableMap<String, DateTimeFormatter> overriddenColumnDateFormatsCopy = ImmutableMap.copyOf(this.overriddenColumnDateFormats);
-      final ColumnType[] copy;
+      final ColumnType[] columnTypesCopy;
       if (columnTypes != null) {
-        copy = Arrays.copyOf(columnTypes, columnTypes.length);
+        columnTypesCopy = Arrays.copyOf(columnTypes, columnTypes.length);
       } else {
-        copy = new ColumnType[0];
+        columnTypesCopy = new ColumnType[0];
       }
-      return new ParsingConfiguration(overriddenColumnTypesCopy, Strings.isNullOrEmpty(tableName) ? fileName : tableName, fileName, header, delimiter, overriddenColumnDateFormatsCopy, copy, stream);
+      final String tableNameToUse = Strings.isNullOrEmpty(this.tableName) ? fileName : this.tableName;
+      return new ParsingConfiguration(overriddenColumnTypesCopy,
+                                      tableNameToUse,
+                                      fileName,
+                                      header,
+                                      delimiter,
+                                      overriddenColumnDateFormatsCopy,
+                                      columnTypesCopy,
+                                      stream);
 
-    }
-
-    private void setColumnType(String columnName, ColumnType type) {
-      this.overriddenColumnTypes.put(columnName, type);
-    }
-
-    private void setColumnDateType(String columnName, DateTimeFormatter dateTimeFormatter) {
-      this.overriddenColumnDateFormats.put(columnName, dateTimeFormatter);
     }
 
     public Builder setColumnTypes(ColumnType[] columnTypes) {
@@ -150,6 +178,20 @@ public final class ParsingConfiguration {
       return this;
     }
 
+    /**
+     * This method is called by the ColumnParsingConfigurationBuilder
+     */
+    private void setColumnDateType(String columnName, DateTimeFormatter dateTimeFormatter) {
+      this.overriddenColumnDateFormats.put(columnName, dateTimeFormatter);
+    }
+
+    /**
+     * This method is called by the ColumnParsingConfigurationBuilder
+     */
+    private void setColumnType(String columnName, ColumnType type) {
+      this.overriddenColumnTypes.put(columnName, type);
+    }
+
   }
 
   public static Builder newBuilder() {
@@ -160,7 +202,7 @@ public final class ParsingConfiguration {
     return fileName;
   }
 
-  public boolean isHeader() {
+  public boolean hasHeader() {
     return header;
   }
 
@@ -181,7 +223,7 @@ public final class ParsingConfiguration {
   }
 
   public ColumnType[] getColumnTypes() {
-    return columnTypes;
+    return Arrays.copyOf(columnTypes, columnTypes.length);
   }
 
   public ImmutableMap<String, DateTimeFormatter> getOverriddenColumnTypesDateFormats() {

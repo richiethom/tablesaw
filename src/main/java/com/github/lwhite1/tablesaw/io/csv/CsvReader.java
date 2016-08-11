@@ -122,7 +122,7 @@ public class CsvReader {
       stream = new FileInputStream(parsingConfiguration.getFileName());
     }
     final ColumnType[] types;
-    final boolean header = parsingConfiguration.isHeader();
+    final boolean header = parsingConfiguration.hasHeader();
     if (parsingConfiguration.hasColumnTypes()) {
       types = parsingConfiguration.getColumnTypes();
     } else {
