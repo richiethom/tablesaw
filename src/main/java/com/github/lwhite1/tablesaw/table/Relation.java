@@ -237,10 +237,26 @@ public interface Relation {
   }
 
   default NumericColumn numericColumn(int columnIndex) {
+    Column c = column(columnIndex);
+    if (c.type() == ColumnType.CATEGORY) {
+      CategoryColumn categoryColumn = (CategoryColumn) c;
+      return categoryColumn.toIntColumn();
+    }  else if (c.type() == ColumnType.BOOLEAN) {
+      BooleanColumn booleanColumn = (BooleanColumn) c;
+      return booleanColumn.toIntColumn();
+    }
     return (NumericColumn) column(columnIndex);
   }
 
   default NumericColumn numericColumn(String columnName) {
+    Column c = column(columnName);
+    if (c.type() == ColumnType.CATEGORY) {
+      CategoryColumn categoryColumn = (CategoryColumn) c;
+      return categoryColumn.toIntColumn();
+    } else if (c.type() == ColumnType.BOOLEAN) {
+      BooleanColumn booleanColumn = (BooleanColumn) c;
+      return booleanColumn.toIntColumn();
+    }
     return (NumericColumn) column(columnName);
   }
 

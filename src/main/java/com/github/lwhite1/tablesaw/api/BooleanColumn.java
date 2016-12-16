@@ -26,8 +26,7 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import java.util.Iterator;
 import java.util.Map;
 
-import static com.github.lwhite1.tablesaw.columns.BooleanColumnUtils.isMissing;
-import static com.github.lwhite1.tablesaw.columns.BooleanColumnUtils.isNotMissing;
+import static com.github.lwhite1.tablesaw.columns.BooleanColumnUtils.*;
 
 /**
  * A column in a base table that contains float values
@@ -180,12 +179,16 @@ public class BooleanColumn extends AbstractColumn implements BooleanMapUtils {
 
   @Override
   public BooleanColumn emptyCopy() {
-    return new BooleanColumn(name());
+    BooleanColumn column = BooleanColumn.create(name());
+    column.setComment(comment());
+    return column;
   }
 
   @Override
   public BooleanColumn emptyCopy(int rowSize) {
-    return BooleanColumn.create(name(), rowSize);
+    BooleanColumn column = BooleanColumn.create(name(), rowSize);
+    column.setComment(comment());
+    return column;
   }
 
   @Override
@@ -195,7 +198,9 @@ public class BooleanColumn extends AbstractColumn implements BooleanMapUtils {
 
   @Override
   public BooleanColumn copy() {
-    return BooleanColumn.create(name(), data);
+    BooleanColumn column = BooleanColumn.create(name(), data);
+    column.setComment(comment());
+    return column;
   }
 
   @Override
@@ -458,6 +463,15 @@ public class BooleanColumn extends AbstractColumn implements BooleanMapUtils {
       output[i] = data.getByte(i);
     }
     return output;
+  }
+
+  public IntColumn toIntColumn() {
+    IntColumn intColumn = IntColumn.create(this.name() + ": ints", size());
+    ByteArrayList data = data();
+    for (int i = 0; i < size(); i++) {
+      intColumn.add(data.getByte(i));
+    }
+    return intColumn;
   }
 
   static class BooleanColumnIterator implements Iterator<Boolean> {

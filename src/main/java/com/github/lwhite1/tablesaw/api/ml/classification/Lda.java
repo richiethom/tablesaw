@@ -15,7 +15,7 @@ import java.util.TreeSet;
 /**
  *
  */
-public class Lda {
+public class Lda extends AbstractClassifier {
 
   private final LDA classifierModel;
 
@@ -91,7 +91,7 @@ public class Lda {
     Preconditions.checkArgument(predictors.length > 0);
 
     SortedSet<Object> labelSet = new TreeSet<>(labels.asSet());
-    ConfusionMatrix confusion = new ConfusionMatrix(labelSet);
+    ConfusionMatrix confusion = new StandardConfusionMatrix(labelSet);
 
     populateMatrix(labels.toIntArray(), confusion, predictors);
     return confusion;
@@ -101,7 +101,7 @@ public class Lda {
     Preconditions.checkArgument(predictors.length > 0);
 
     SortedSet<Object> labelSet = new TreeSet<>(labels.asSet());
-    ConfusionMatrix confusion = new ConfusionMatrix(labelSet);
+    ConfusionMatrix confusion = new StandardConfusionMatrix(labelSet);
 
     populateMatrix(labels.data().toIntArray(), confusion, predictors);
     return confusion;
@@ -111,7 +111,7 @@ public class Lda {
     Preconditions.checkArgument(predictors.length > 0);
 
     SortedSet<Object> labelSet = new TreeSet<>(labels.asSet());
-    ConfusionMatrix confusion = new ConfusionMatrix(labelSet);
+    ConfusionMatrix confusion = new StandardConfusionMatrix(labelSet);
 
     populateMatrix(labels.toIntArray(), confusion, predictors);
     return confusion;
@@ -120,22 +120,11 @@ public class Lda {
   public ConfusionMatrix predictMatrix(CategoryColumn labels, NumericColumn ... predictors) {
     Preconditions.checkArgument(predictors.length > 0);
 
-    SortedSet<Object> labelSet = new TreeSet<>(labels.asSet());
-    ConfusionMatrix confusion = new ConfusionMatrix(labelSet);
+    SortedSet<String> labelSet = new TreeSet<>(labels.asSet());
+    ConfusionMatrix confusion = new CategoryConfusionMatrix(labels, labelSet);
 
     populateMatrix(labels.data().toIntArray(), confusion, predictors);
     return confusion;
-  }
-
-  private void populateMatrix(int[] labels, ConfusionMatrix confusion, NumericColumn[] predictors) {
-    for (int row = 0; row < predictors[0].size(); row++) {
-      double[] data = new double[predictors.length];
-      for (int col = 0; col < predictors.length; col++) {
-        data[col] = predictors[col].getFloat(row);
-      }
-      int prediction = classifierModel.predict(data);
-      confusion.increment(prediction, labels[row]);
-    }
   }
 
   public int[] predict(NumericColumn ... predictors) {
@@ -149,5 +138,10 @@ public class Lda {
       predictedLabels[row] = classifierModel.predict(data);
     }
     return predictedLabels;
+  }
+
+  @Override
+  int predictFromModel(double[] data) {
+    return classifierModel.predict(data);
   }
 }

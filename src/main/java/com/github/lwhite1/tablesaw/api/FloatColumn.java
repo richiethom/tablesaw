@@ -252,6 +252,13 @@ public class FloatColumn extends AbstractColumn implements FloatIterable, Numeri
     data.add(f);
   }
 
+  /**
+   * Adds the given double to this column, after casting it to a float
+   */
+  public void add(double d) {
+    data.add((float) d);
+  }
+
   // Predicate  functions
 
   public Selection isLessThan(float f) {
@@ -302,12 +309,16 @@ public class FloatColumn extends AbstractColumn implements FloatIterable, Numeri
 
   @Override
   public FloatColumn emptyCopy() {
-    return new FloatColumn(name());
+    FloatColumn column = new FloatColumn(name());
+    column.setComment(comment());
+    return column;
   }
 
   @Override
   public FloatColumn emptyCopy(int rowSize) {
-    return new FloatColumn(name(), rowSize);
+    FloatColumn column = new FloatColumn(name(), rowSize);
+    column.setComment(comment());
+    return column;
   }
 
   @Override
@@ -317,7 +328,9 @@ public class FloatColumn extends AbstractColumn implements FloatIterable, Numeri
 
   @Override
   public FloatColumn copy() {
-    return FloatColumn.create(name(), data);
+    FloatColumn column = FloatColumn.create(name(), data);
+    column.setComment(comment());
+    return column;
   }
 
   @Override

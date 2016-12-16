@@ -337,6 +337,23 @@ public class Table implements Relation, IntIterable {
     return tables;
   }
 
+  /**
+   * Returns a table consisting of randomly selected records from this table. The sample size is based on the
+   * given proportion
+   *
+   * @param proportion The proportion to go in the sample
+   */
+  public Table sample(double proportion) {
+
+    int tableCount = (int) Math.round(rowCount() * proportion);
+
+    Selection table1Selection = new BitmapBackedSelection();
+    int[] selectedRecords = generateUniformBitmap(tableCount, rowCount());
+    for (int selectedRecord : selectedRecords) {
+      table1Selection.add(selectedRecord);
+    }
+    return selectWhere(table1Selection);
+  }
 
   /**
    * Clears all the data from this table
@@ -384,15 +401,15 @@ public class Table implements Relation, IntIterable {
 
     Sort key = null;
     Order order;
-    List<String> names = columnNames();
+    List<String> names = new ArrayList<>();
+    for (String name : columnNames()) {
+      names.add(name.toUpperCase());
+    }
 
     for (String columnName : columnNames) {
-
-      if (names.contains(columnName)) {
-
+      if (names.contains(columnName.toUpperCase())) {
         // the column name has not been annotated with a prefix.
         order = Order.ASCEND;
-
       } else {
 
         // get the prefix which could be - or +
@@ -402,7 +419,6 @@ public class Table implements Relation, IntIterable {
         columnName = columnName.substring(1, columnName.length());
 
         switch (prefix) {
-
           case "+":
             order = Order.ASCEND;
             break;
@@ -412,7 +428,6 @@ public class Table implements Relation, IntIterable {
           default:
             throw new IllegalStateException("Column prefix: " + prefix + " is unknown.");
         }
-
       }
 
       if (key == null) { // key will be null the first time through
@@ -421,7 +436,6 @@ public class Table implements Relation, IntIterable {
         key.next(columnName, order);
       }
     }
-
     return sortOn(key);
   }
 
@@ -457,9 +471,6 @@ public class Table implements Relation, IntIterable {
   }
 
   /**
-   * Returns a copy of this table sorted on the given columns
-   * <p>
-   * The columns are sorted in reverse order if they value matching the name is {@code true}
    */
   public Table sortOn(Sort key) {
     Preconditions.checkArgument(!key.isEmpty());
@@ -599,6 +610,25 @@ public class Table implements Relation, IntIterable {
       columnType.add(column.type().name());
     }
     return t;
+  }
+
+  /**
+   * Returns the unique records in this table
+   * Note: Uses a lot of memory for a sort
+   */
+  public Table uniqueRecords() {
+
+    IntArrayList uniqueRows = new IntArrayList();
+    Table sorted = this.sortOn(columnNames().toArray(new String[columns().size()]));
+    Table temp = emptyCopy();
+
+    for (int row = 0; row < rowCount(); row++) {
+      if (temp.isEmpty() || !Rows.compareRows(row, sorted, temp)) {
+        uniqueRows.add(row);
+        Rows.appendRowToTable(row, sorted, temp);
+      }
+    }
+    return temp;
   }
 
   public Projection select(String... columnName) {
@@ -842,6 +872,62 @@ public class Table implements Relation, IntIterable {
   }
 
 
+/**
+   * Joins together this table and another table on the given column names. All the records of this table are included
+   * @return   A new table derived from combining this table with {@code other} table
+   */
+
+  public Table innerJoin(Table other, String columnName, String otherColumnName) {
+    // create a new table like this one
+    Table table = new Table(this.name());
+    // add the columns from this table
+    for (Column column : columns()) {
+      table.addColumn(column);
+    }
+    // add the columns from the other table, but leave the data out for now
+    for (Column column : other.columns()) {
+      if (!column.name().equals(otherColumnName)) {  // skip the join column so it's not duplicated
+        table.addColumn(column.emptyCopy());
+      }
+    }
+
+    // iterate over the rows in the new table, fetching rows from the other table that match on
+    Column joinColumn = column(columnName);
+    Column otherJoinColumn = other.column(otherColumnName);
+    int otherRowIndex = -1;
+    for (int row : table) {
+      String key = joinColumn.getString(row);
+      otherRowIndex = other.getFirst(otherJoinColumn, key);
+      if (otherRowIndex != -1) {
+        // fill in the values of other tables columns for that row.
+        for (Column c : other.columns()) {
+          if (!c.name().equals(otherColumnName)) {
+            column(c.name()).addCell(c.getString(otherRowIndex));
+          }
+        }
+      }
+    }
+    return table;
+  }
+
+
+  /**
+   * Returns the first row for which the column {@code columnName} contains {@code value}, or
+   * null if there are no matches
+   * TODO(lwhite) This is a toy implementation badly in need of rewrite for performance.
+   */
+  private int getFirst(Column column, String value) {
+    int row = -1;
+    for (int r : this) {
+      if (column.getString(r).equals(value)) {
+        row = r;
+        break;
+      }
+    }
+    return row;
+  }
+
+
   @Override
   public String toString() {
     return "Table " + name + ": Size = " + rowCount() + " x " + columnCount();
@@ -876,7 +962,9 @@ public class Table implements Relation, IntIterable {
     };
   }
 
-
+  /**
+   * Returns an randomly generated array of ints of size N where Max is the largest possible value
+   */
   static int[] generateUniformBitmap(int N, int Max) {
 
     if (N > Max) throw new RuntimeException("not possible");

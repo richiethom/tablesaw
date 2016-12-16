@@ -1,14 +1,13 @@
 package com.github.lwhite1.tablesaw.api.ml.classification;
 
 import com.github.lwhite1.tablesaw.api.Table;
-import com.github.lwhite1.tablesaw.api.ml.classification.ConfusionMatrix;
-import com.github.lwhite1.tablesaw.api.ml.classification.LogisticRegression;
 import com.github.lwhite1.tablesaw.api.plot.Scatter;
+import com.github.lwhite1.tablesaw.util.Example;
 
 /**
  *
  */
-public class LogisticRegressionExample {
+public class LogisticRegressionExample extends Example {
 
   public static void main(String[] args) throws Exception {
 
@@ -33,9 +32,4 @@ public class LogisticRegressionExample {
     out(matrix.toTable().printHtml());
     out(String.valueOf(matrix.accuracy()));
   }
-
-  private static void out(Object obj) {
-    System.out.println(String.valueOf(obj));
-  }
-
 }

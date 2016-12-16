@@ -6,7 +6,9 @@ import com.google.common.primitives.Ints;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.ZoneId;
 import java.time.chrono.IsoChronology;
+import java.util.Date;
 
 /**
  * A short localdate packed into a single int value. It uses a short for year so the range is about +-30,000 years
@@ -69,6 +71,10 @@ public class PackedLocalDate {
         byte2,
         (byte) date.getMonthValue(),
         (byte) date.getDayOfMonth());
+  }
+
+  public static int pack(Date date) {
+    return pack(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
   }
 
   public static int pack(short yr, byte m, byte d) {
@@ -152,6 +158,7 @@ public class PackedLocalDate {
   }
 
   public static DayOfWeek getDayOfWeek(int packedDate) {
+    //TODO(lwhite): This is throwing an exception java.lang.NoSuchMethodError even tho the jdk version seems correct
     int dow0 = (int) Math.floorMod(toEpochDay(packedDate) + 3, 7);
     return DayOfWeek.of(dow0 + 1);
   }

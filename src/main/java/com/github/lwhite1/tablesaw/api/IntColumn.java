@@ -180,12 +180,16 @@ public class IntColumn extends AbstractColumn implements IntMapUtils, NumericCol
 
   @Override
   public IntColumn emptyCopy() {
-    return new IntColumn(name(), DEFAULT_ARRAY_SIZE);
+    IntColumn column = new IntColumn(name(), DEFAULT_ARRAY_SIZE);
+    column.setComment(comment());
+    return column;
   }
 
   @Override
   public IntColumn emptyCopy(int rowSize) {
-    return new IntColumn(name(), rowSize);
+    IntColumn column = new IntColumn(name(), rowSize);
+    column.setComment(comment());
+    return column;
   }
 
   @Override
@@ -205,7 +209,9 @@ public class IntColumn extends AbstractColumn implements IntMapUtils, NumericCol
 
   @Override
   public IntColumn copy() {
-    return create(name(), data);
+    IntColumn column = create(name(), data);
+    column.setComment(comment());
+    return column;
   }
 
   @Override
@@ -390,6 +396,14 @@ public class IntColumn extends AbstractColumn implements IntMapUtils, NumericCol
     return output;
   }
 
+  public int[] toIntArray() {
+    int[] output = new int[data.size()];
+    for (int i = 0; i < data.size(); i++) {
+      output[i] = data.getInt(i);
+    }
+    return output;
+  }
+
   public double[] toDoubleArray() {
     double[] output = new double[data.size()];
     for (int i = 0; i < data.size(); i++) {
@@ -524,14 +538,6 @@ public class IntColumn extends AbstractColumn implements IntMapUtils, NumericCol
     FloatColumn result = FloatColumn.create(name() + " * " + column2.name(), size());
     for (int r = 0; r < size(); r++) {
       result.add(get(r) * column2.get(r));
-    }
-    return result;
-  }
-
-  public IntColumn divide(IntColumn column2) {
-    IntColumn result = IntColumn.create(name() + " / " + column2.name(), size());
-    for (int r = 0; r < size(); r++) {
-      result.add(get(r) / column2.get(r));
     }
     return result;
   }

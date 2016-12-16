@@ -8,8 +8,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
+import java.time.ZoneId;
 import java.time.chrono.IsoChronology;
 import java.time.temporal.ChronoField;
+import java.util.Date;
 
 import static com.github.lwhite1.tablesaw.columns.packeddata.PackedLocalDate.asLocalDate;
 
@@ -75,6 +77,10 @@ public class PackedLocalDateTime {
     int d = PackedLocalDate.pack(date);
     int t = PackedLocalTime.pack(time);
     return (((long) d) << 32) | (t & 0xffffffffL);
+  }
+
+  public static long pack(Date date) {
+    return pack(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
   }
 
   public static long pack(short yr, byte m, byte d, byte hr, byte min, byte s, byte n) {
@@ -158,8 +164,8 @@ public class PackedLocalDateTime {
   }
 
   public static DayOfWeek getDayOfWeek(long packedDateTime) {
-    int dow0 = (int) Math.floorMod(toEpochDay(packedDateTime) + 3, 7);
-    return DayOfWeek.of(dow0 + 1);
+    int date = PackedLocalDateTime.date(packedDateTime);
+    return PackedLocalDate.getDayOfWeek(date);
   }
 
   private static long toEpochDay(long packedDateTime) {

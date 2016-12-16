@@ -1,7 +1,7 @@
 package com.github.lwhite1.tablesaw.api;
 
-import com.github.lwhite1.tablesaw.reducing.CategoryReduceUtils;
 import com.github.lwhite1.tablesaw.columns.AbstractColumn;
+import com.github.lwhite1.tablesaw.columns.CategoryColumnUtils;
 import com.github.lwhite1.tablesaw.columns.Column;
 import com.github.lwhite1.tablesaw.filtering.StringBiPredicate;
 import com.github.lwhite1.tablesaw.filtering.StringPredicate;
@@ -37,7 +37,7 @@ import java.util.Set;
  * A column in a base table that contains float values
  */
 public class CategoryColumn extends AbstractColumn
-    implements CategoryFilters, CategoryReduceUtils, Iterable<String> {
+    implements CategoryFilters, CategoryColumnUtils, Iterable<String> {
 
   private static final int BYTE_SIZE = 4;
 
@@ -96,12 +96,16 @@ public class CategoryColumn extends AbstractColumn
 
   @Override
   public CategoryColumn emptyCopy() {
-    return new CategoryColumn(name());
+    CategoryColumn copy = new CategoryColumn(name());
+    copy.setComment(comment());
+    return copy;
   }
 
   @Override
   public CategoryColumn emptyCopy(int rowSize) {
-    return CategoryColumn.create(name(), rowSize);
+    CategoryColumn copy = new CategoryColumn(name(), rowSize);
+    copy.setComment(comment());
+    return copy;
   }
 
   @Override
@@ -260,8 +264,9 @@ public class CategoryColumn extends AbstractColumn
    * Initializes this Column with the given values for performance
    */
   public void initializeWith(IntArrayList list, DictionaryMap map) {
-    values = list;
-    lookupTable = map;
+    for (int key : list) {
+      add(map.get(key));
+    }
   }
 
   /**
@@ -380,7 +385,7 @@ public class CategoryColumn extends AbstractColumn
 
     // iterate over the values, updating the dummy variable columns as appropriate
     for (int next : values) {
-      String category = get(next);
+      String category = lookupTable.get(next);
       for (BooleanColumn column : results) {
         if (category.equals(column.name())) {
           //TODO(lwhite): update the correct row more efficiently, by using set rather than add & only updating true
@@ -407,6 +412,15 @@ public class CategoryColumn extends AbstractColumn
    */
   public IntArrayList data() {
     return values;
+  }
+
+  public IntColumn toIntColumn() {
+    IntColumn intColumn = IntColumn.create(this.name() + ": codes", size());
+    IntArrayList data = data();
+    for (int i = 0; i < size(); i++) {
+      intColumn.add(data.getInt(i));
+    }
+    return intColumn;
   }
 
   public DictionaryMap dictionaryMap() {
@@ -541,6 +555,7 @@ public class CategoryColumn extends AbstractColumn
     CategoryColumn newCol = CategoryColumn.create(name(), size());
     newCol.lookupTable = new DictionaryMap(lookupTable);
     newCol.values.addAll(values);
+    newCol.setComment(comment());
     return newCol;
   }
 
@@ -599,6 +614,14 @@ public class CategoryColumn extends AbstractColumn
     return lookupTable.categories();
   }
 
+  /**
+   * Returns the integer encoded value of each cell in this column. It can be used to lookup the mapped string in
+   * the lookupTable
+   */
+  public IntArrayList values() {
+    return values;
+  }
+
   @Override
   public int byteSize() {
     return BYTE_SIZE;
@@ -610,5 +633,25 @@ public class CategoryColumn extends AbstractColumn
   @Override
   public byte[] asBytes(int rowNumber) {
     return ByteBuffer.allocate(4).putInt(getInt(rowNumber)).array();
+  }
+
+  public Selection isIn(String ... strings) {
+    IntArrayList keys = new IntArrayList();
+    for (String string : strings) {
+      int key = lookupTable.get(string);
+      if (key >= 0) {
+        keys.add(key);
+      }
+    }
+
+    int i = 0;
+    Selection results = new BitmapBackedSelection();
+    for (int next : values) {
+      if (keys.contains(next)) {
+        results.add(i);
+      }
+      i++;
+    }
+    return results;
   }
 }

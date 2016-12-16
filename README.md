@@ -1,16 +1,18 @@
 Tablesaw
 =======
+  
+__HELP A GUY OUT:__ If you use tablesaw, please shoot me an email and tell me what you're up to: <ljw1001@gmail.com>. I'm thinking about next steps and would love your input. Or, if you decide not to use tablesaw, please let me know why. Thanks!
    
-Tablesaw is an easy-to-use platform for data science in Java. It includes a data-frame, an embedded column-store, and has hundreds of methods to transform, summarize, or filter data. If you work with data in Java, it will probably save you time and effort.
+__Tablesaw__ is the shortest path to data science in Java. It includes a data-frame, an embedded column-store, and  hundreds of methods to transform, summarize, or filter data. If you work with data in Java, it will probably save you time and effort.
 
-It also includes support for descriptive statistics, data visualization, and preliminary support for machine learning, with more coming soon. There are other, more elaborate platforms for data science in Java. They were designed to work with vast amounts of data, and that requires a big stack: Spark, Hadoop, HDFS, Pig, Yarn, maybe.  
+Tablesaw also supports descriptive statistics, data visualization, and machine learning. And it scales: You can munge a 1/2 billion rows on a laptop and over 2 billion records on a server. 
 
-With Tablesaw, you can manipulate half a billion rows on a laptop and over 2 billion records on a server. All it takes to get started is one maven dependency:  
+There are other, more elaborate platforms for data science in Java. They're designed to work with vast amounts of data, and  require a huge stack and a vast amount of effort. All it takes to get started with Tablesaw is one maven dependency:  
 
     <dependency>
         <groupId>com.github.lwhite1</groupId>
         <artifactId>tablesaw</artifactId>
-        <version>0.7.2.1</version>
+        <version>0.7.6.4</version>
     </dependency>
 
 ### Documentation and support:
@@ -19,7 +21,7 @@ With Tablesaw, you can manipulate half a billion rows on a laptop and over 2 bil
 * The __JavaDoc__ can be found here: http://lwhite1.github.io/tablesaw/apidocs/
 * If you have __questions of any kind__: Ask them in the Issues section of this Repo.
  
-A 1.0 release is planned for early September.  
+A 1.0 release is planned for year end.  
 
 ### Tablesaw features: 
 
@@ -32,28 +34,29 @@ A 1.0 release is planned for early September.
 * Store tables in a fast, compressed columnar storage format
 
 #### Statistics and Machine Learning
-* Descriptive stats (mean, min, max, median, standard deviation, percentiles, etc.)
-* Regression (Least Squares)
-* Classification: (Logistic Regression, Linear Discriminant Analysis, and k-Nearest Neighbors)
-* Clustering: (k-Means)
+* Descriptive stats: mean, min, max, median, sum, product, standard deviation, variance, percentiles, geometric mean, skewness, kurtosis, etc.
+* Regression: Least Squares
+* Classification: Logistic Regression, Linear Discriminant Analysis, Decision Trees, k-Nearest Neighbors, Random Forests
+* Clustering: k-Means, x-Means, g-Means
+* Association: Frequent Item Sets, Association Rule Mining
+* Feature engineering: Principal Components Analysis
 
 #### Visualization
-* Scatter
-* Line
-* Vertical Bar
-* Horizontal Bar
-* Histogram 
+* Scatter plots
+* Line plots
+* Vertical and Horizontal Bar charts
+* Histograms 
 * Box plots
 * Quantile Plots
 * Pareto Charts
 
 Here's an example where we use [XChart](https://github.com/timmolter/XChart) to map the locations of tornadoes: 
-![Alt text](https://jtablesaw.files.wordpress.com/2016/07/tornados2.png?w=809)
+![Alt text](https://jtablesaw.files.wordpress.com/2016/07/tornados3.png?w=809)
 
 You can see examples and read more about plotting in Tablesaw here: https://jtablesaw.wordpress.com/2016/07/30/new-plot-types-in-tablesaw/.
 
 ### Current performance:
-Some areas of Tablesaw perform better than others. To give you a sense of where we're going, you can now load a 500,000,000 row, 4 column csv file (35GB on disk) entirely into about 10 GB of memory. If it's in Tablesaw's .saw format, you can load it in 22 seconds. You can query that table in 1-2 ms: fast enough to use as a cache for a Web app.
+You can load a 500,000,000 row, 4 column csv file (35GB on disk) entirely into about 10 GB of memory. If it's in Tablesaw's .saw format, you can load it in 22 seconds. You can query that table in 1-2 ms: fast enough to use as a cache for a Web app.
 
 BTW, those numbers were achieved on a laptop.
 

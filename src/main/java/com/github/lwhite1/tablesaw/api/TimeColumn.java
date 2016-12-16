@@ -94,12 +94,16 @@ public class TimeColumn extends AbstractColumn implements Iterable<LocalTime>, T
 
   @Override
   public TimeColumn emptyCopy() {
-    return new TimeColumn(name());
+    TimeColumn column = new TimeColumn(name(), DEFAULT_ARRAY_SIZE);
+    column.setComment(comment());
+    return column;
   }
 
   @Override
   public TimeColumn emptyCopy(int rowSize) {
-    return new TimeColumn(name(), rowSize);
+    TimeColumn column = new TimeColumn(name(), rowSize);
+    column.setComment(comment());
+    return column;
   }
 
   @Override
@@ -109,7 +113,9 @@ public class TimeColumn extends AbstractColumn implements Iterable<LocalTime>, T
 
   @Override
   public TimeColumn copy() {
-    return TimeColumn.create(name(), data);
+    TimeColumn column = TimeColumn.create(name(), data);
+    column.setComment(comment());
+    return column;
   }
 
   @Override
